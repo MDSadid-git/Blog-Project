@@ -1,0 +1,143 @@
+openapi: 3.0.0
+info:
+  title: Blog Project
+  description: This API is built for mobile web and admin dashboard.
+  version: 1.0.0
+servers:
+  - url: xyzLikve/api/v1
+    description: live link
+  - url: http://localhost:5000/api/v1
+    description: Localhost
+paths:
+  /academic-semester:
+    get:
+      summary: Get all academic semesters
+      description: Retrieve all academic semesters from the database.
+      tags:
+        - Academic Semester
+      responses:
+        '200':
+          description: List of academic semesters retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AcademicSemester'
+        '500':
+          description: Server error.
+
+  /academic-semester/create-academicSemester:
+    post:
+      summary: Create a new academic semester
+      description: Add a new academic semester to the database.
+      tags:
+        - Academic Semester
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcademicSemester'
+      responses:
+        '201':
+          description: Academic semester created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicSemester'
+        '400':
+          description: Invalid request data.
+        '409':
+          description: Academic semester already exists.
+        '500':
+          description: Server error.
+
+  /academic-semester/{semesterId}:
+    get:
+      summary: Get a single academic semester
+      description: Retrieve details of a specific academic semester by its ID.
+      tags:
+        - Academic Semester
+      parameters:
+        - in: path
+          name: semesterId
+          required: true
+          schema:
+            type: string
+          description: The ID of the academic semester.
+      responses:
+        '200':
+          description: Academic semester details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicSemester'
+        '404':
+          description: Academic semester not found.
+        '500':
+          description: Server error.
+
+    patch:
+      summary: Update an academic semester
+      description: Update details of a specific academic semester by its ID.
+      tags:
+        - Academic Semester
+      parameters:
+        - in: path
+          name: semesterId
+          required: true
+          schema:
+            type: string
+          description: The ID of the academic semester.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcademicSemester'
+      responses:
+        '200':
+          description: Academic semester updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicSemester'
+        '400':
+          description: Invalid request data.
+        '404':
+          description: Academic semester not found.
+        '500':
+          description: Server error.
+components:
+  schemas:
+    AcademicSemester:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the academic semester.
+        year:
+          type: string
+          description: The year of the academic semester.
+        code:
+          type: string
+          description: The code representing the semester.
+        startMonth:
+          type: string
+          description: The starting month of the semester.
+        endMonth:
+          type: string
+          description: The ending month of the semester.
+      required:
+        - name
+        - year
+        - code
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
