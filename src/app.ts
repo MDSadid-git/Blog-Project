@@ -16,11 +16,11 @@ const app: Application = express();
 //parsers
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: ['http://localhost:5173'] }));
+app.use(cors({ origin: ['http://localhost:5000'] }));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerConfig));
 
 // application routes
-app.use('/api/v1', router);
+app.use('/api/', router);
 
 app.use(globalErrorHandler);
 
