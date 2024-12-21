@@ -1,139 +1,462 @@
 openapi: 3.0.0
 info:
-  title: Blog Project
-  description: This API is built for mobile web and admin dashboard.
+  title: Blog Project API
+  description: This API is built for managing blogs and is used in both mobile and web applications.
   version: 1.0.0
 servers:
-  - url: xyzLikve/api/v1
-    description: live link
-  - url: http://localhost:5000/api/v1
+  - url: http://localhost:5000/api
     description: Localhost
+
 paths:
-  /academic-semester:
-    get:
-      summary: Get all academic semesters
-      description: Retrieve all academic semesters from the database.
+  /blogs/create-blog:
+    post:
+      summary: Create a new blog
+      description: Allows an authorized user to create a blog.
       tags:
-        - Academic Semester
+        - Blogs
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBlogRequest'
+      responses:
+        '201':
+          description: Blog created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blog'
+        '401':
+          description: Unauthorized access.
+        '500':
+          description: Server error.
+
+  /blogs/{id}:
+    patch:
+      summary: Update a blog
+      description: Updates the details of an existing blog.
+      tags:
+        - Blogs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Blog ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBlogRequest'
       responses:
         '200':
-          description: List of academic semesters retrieved successfully.
+          description: Blog updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blog'
+        '404':
+          description: Blog not found.
+        '401':
+          description: Unauthorized access.
+
+    delete:
+      summary: Delete a blog
+      description: Deletes a blog by its ID.
+      tags:
+        - Blogs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Blog ID
+      responses:
+        '200':
+          description: Blog deleted successfully.
+        '404':
+          description: Blog not found.
+        '401':
+          description: Unauthorized access.
+
+  /blogs:
+    get:
+      summary: Get all blogs
+      description: Retrieves a list of blogs with optional search, filter, and sorting.
+      tags:
+        - Blogs
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+            description: Search keyword for blog title or content.
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            description: Field to sort by (default is `createdAt`).
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            description: Sort order (asc or desc).
+        - name: filter
+          in: query
+          schema:
+            type: string
+            description: Filter blogs by author ID.
+      responses:
+        '200':
+          description: Blogs fetched successfully.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AcademicSemester'
-        '500':
-          description: Server error.
+                  $ref: '#/components/schemas/Blog'
 
-  /academic-semester/create-academicSemester:
+  /auth/register:
     post:
-      summary: Create a new academic semester
-      description: Add a new academic semester to the database.
+      summary: Register a new user
+      description: Allows a new user to register in the system.
       tags:
-        - Academic Semester
+        - Authentication
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AcademicSemester'
+              $ref: '#/components/schemas/RegisterUser'
       responses:
         '201':
-          description: Academic semester created successfully.
+          description: User registered successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AcademicSemester'
+                $ref: '#/components/schemas/RegisteredUserResponse'
         '400':
           description: Invalid request data.
-        '409':
-          description: Academic semester already exists.
-        '500':
-          description: Server error.
 
-  /academic-semester/{semesterId}:
-    get:
-      summary: Get a single academic semester
-      description: Retrieve details of a specific academic semester by its ID.
+  /auth/login:
+    post:
+      summary: Login a user
+      description: Authenticates a user and returns a JWT token.
       tags:
-        - Academic Semester
-      parameters:
-        - in: path
-          name: semesterId
-          required: true
-          schema:
-            type: string
-          description: The ID of the academic semester.
-      responses:
-        '200':
-          description: Academic semester details retrieved successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AcademicSemester'
-        '404':
-          description: Academic semester not found.
-        '500':
-          description: Server error.
-
-    patch:
-      summary: Update an academic semester
-      description: Update details of a specific academic semester by its ID.
-      tags:
-        - Academic Semester
-      parameters:
-        - in: path
-          name: semesterId
-          required: true
-          schema:
-            type: string
-          description: The ID of the academic semester.
+        - Authentication
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AcademicSemester'
+              $ref: '#/components/schemas/LoginUser'
       responses:
         '200':
-          description: Academic semester updated successfully.
+          description: User logged in successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AcademicSemester'
-        '400':
-          description: Invalid request data.
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials.
+
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      description: Retrieve a specific user by their ID (Admin access only).
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: User ID
+      responses:
+        '200':
+          description: User retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
         '404':
-          description: Academic semester not found.
-        '500':
-          description: Server error.
+          description: User not found.
+
+  /users:
+    get:
+      summary: Get all users
+      description: Retrieve a list of all users (Admin access only).
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '403':
+          description: Access denied.
+  /users/{userId}/block:
+    patch:
+      summary: Block a user
+      description: Allows an admin to block a user by their ID.
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID of the user to block
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User blocked successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  statusCode:
+                    type: integer
+                  data:
+                    $ref: '#/components/schemas/User'
+        '403':
+          description: Forbidden - Only admin can block users.
+        '404':
+          description: User not found.
+        '400':
+          description: Bad request - User is already blocked or cannot block admin.
+
+  /blogs/{id}:
+    delete:
+      summary: Delete a blog
+      description: Allows an admin to delete a blog by its ID.
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the blog to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Blog deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  statusCode:
+                    type: integer
+                  data:
+                    $ref: '#/components/schemas/Blog'
+        '403':
+          description: Forbidden - Only admin can delete blogs.
+        '404':
+          description: Blog not found.
+
 components:
   schemas:
-    AcademicSemester:
+   components:
+  schemas:
+    Blog:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Blog ID.
+        title:
+          type: string
+          description: Blog title
+        content:
+          type: string
+          description: Blog content
+        author:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Author ID
+            name:
+              type: string
+              description: Author name
+        ispublished:
+          type: boolean
+          description: Publication status of the blog.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateBlogRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        author:
+          type: string
+        ispublished:
+          type: boolean
+
+    UpdateBlogRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        ispublished:
+          type: boolean
+
+    RegisterUser:
       type: object
       properties:
         name:
           type: string
-          description: The name of the academic semester.
-        year:
+        email:
           type: string
-          description: The year of the academic semester.
-        code:
+          format: email
+        password:
           type: string
-          description: The code representing the semester.
-        startMonth:
-          type: string
-          description: The starting month of the semester.
-        endMonth:
-          type: string
-          description: The ending month of the semester.
-      required:
-        - name
-        - year
-        - code
 
+    RegisteredUserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+
+    LoginUser:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        accessToken:
+          type: string
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User ID
+        name:
+          type: string
+          description: User name
+        email:
+          type: string
+          description: User email
+        role:
+          type: string
+          enum: [admin, user]
+          description: User role
+        isBlocked:
+          type: boolean
+          description: Indicates if the user is blocked
+
+    Blog:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Blog ID
+        title:
+          type: string
+          description: Blog title
+        content:
+          type: string
+          description: Blog content
+        author:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Author ID
+            name:
+              type: string
+              description: Author name
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+      type: object
+      properties:
+        id:
+          type: string
+          description: Blog ID
+        title:
+          type: string
+          description: Blog title
+        content:
+          type: string
+          description: Blog content
+        author:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Author ID
+            name:
+              type: string
+              description: Author name
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
   securitySchemes:
     bearerAuth:
       type: http

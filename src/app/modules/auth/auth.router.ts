@@ -3,18 +3,32 @@ import { Router } from 'express';
 import validateRequest from '../../middlewares/validateRequest';
 import { loginUserValidation, registerUserValidation } from './auth.validation';
 import { AuthController } from './auth.controller';
+import { auth } from '../../middlewares/auth';
 
-const AuthRoutes = Router();
+const route = Router();
 
-AuthRoutes.post(
+// ------ START REGISTER ------
+route.post(
   '/register',
   validateRequest(registerUserValidation),
   AuthController.registerUser,
 );
-AuthRoutes.post(
+// ------ END REGISTER ------
+
+// ------ START Login ------
+route.post(
   '/login',
   validateRequest(loginUserValidation),
   AuthController.loginUser,
 );
+// ------ END Login ------
 
-export default AuthRoutes;
+// ------ START findSingleUser ------
+route.get('/:id', auth('admin'), AuthController.findSingleUser);
+// ------ END findSingleUser ------
+
+// ------ START findAllUser ------
+route.get('/', auth('admin'), AuthController.findAllUser);
+// ------ END findAllUser ------
+
+export const AuthRoutes = route;
